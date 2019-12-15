@@ -60,11 +60,14 @@
     var score = 0;
     var scoreText;
 
-    // when a player collects a star, that star is disabled
+    // fucntionality when a player collects a star
     function collectStar (player, star)
-    {
+    {   
+        // that star is disabled
         star.disableBody(true, true);
+        // player 10 points added to player score 
         score += 10;
+        // the score display is updated
         scoreText.setText('Score: ' + score);
     }
  
@@ -77,6 +80,9 @@
         // set origin draws the image from an x,y coordinate
         // z-index of images corresponds to the order in which they are loaded
         this.add.image(400, 300, 'sky');
+
+        // create a score display for the player
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
         // add usage of Arcade Physics system on platforms
         // platforms are now Static Physics Group, a type of component, simply have position and size, don't move
