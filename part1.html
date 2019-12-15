@@ -52,8 +52,15 @@
         );
     }
 
+    // define our game variables and functions
     var platforms;
     var player;
+
+    // when a player collects a star, that star is disabled
+    function collectStar (player, star)
+    {
+        star.disableBody(true, true);
+    }
  
 
     // create our game with game world, players, phyiscs, and gameplay
@@ -80,6 +87,9 @@
         platforms.create(750, 220, 'ground');
 
         // create stars group
+        // star image
+        // repeat to show 11 stars
+        // space the stars starting at x:12, y:0, and space them apart by 70px in the x direction
         stars = this.physics.add.group({
             key: 'star',
             repeat: 11,
@@ -91,6 +101,10 @@
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
 
         });
+
+        // STARS COLLIDER
+        // stars will sit on the platforms
+        this.physics.add.collider(stars, platforms);
 
 
         
@@ -146,6 +160,7 @@
         // logic is defined in update function
         cursors = this.input.keyboard.createCursorKeys();
 
+    
 
         
     }
@@ -180,6 +195,10 @@
         {
             player.setVelocityY(-530);
         }
+
+        // when a playeroverlaps a star, the collectStar method is called
+        this.physics.add.overlap(player, stars, collectStar, null, this);
+
     }
 
 </script>
