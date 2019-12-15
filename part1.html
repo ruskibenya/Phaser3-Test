@@ -69,6 +69,39 @@
         score += 10;
         // the score display is updated
         scoreText.setText('Score: ' + score);
+
+        // when player has collected all the stars
+        if (stars.countActive(true) === 0)
+        {
+            stars.children.iterate(function (child) {
+
+                child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            // select a random x coordinate to drop the bomb
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            // drop the bomb and set the physics of the bomb (bounce, bounds, velocity)
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+
+        }
+    }
+
+    // functionality when a player hits a bomb
+    function hitBomb (player, bomb)
+    {   
+        // stop the game
+        this.physics.pause();
+        // turn player and set him red
+        player.setTint(0xff0000);
+        player.anims.play('turn');
+
+        // end game
+        gameOver = true;
     }
  
 
@@ -98,7 +131,7 @@
         platforms.create(50, 250, 'ground');
         platforms.create(750, 220, 'ground');
 
-        // create stars group
+        // STARS GROUP
         // star image
         // repeat to show 11 stars
         // space the stars starting at x:12, y:0, and space them apart by 70px in the x direction
@@ -119,7 +152,6 @@
         this.physics.add.collider(stars, platforms);
 
 
-        
 
         // GAME PLAYER
 
@@ -172,6 +204,14 @@
         // logic is defined in update function
         cursors = this.input.keyboard.createCursorKeys();
 
+
+        // BOMBS GROUP
+        bombs = this.physics.add.group();
+        // BOMBS COLLIDERS
+        // Bombs sit on platforms
+        this.physics.add.collider(bombs, platforms);
+        // bombs will call hitbomb function when collide with player
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
     
 
         
