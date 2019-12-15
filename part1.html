@@ -21,6 +21,14 @@
         // size of canvas element that game will display in
         width: 800,
         height: 600,
+        // configuration to allow use of Arcade Physics system
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: {y: 300},
+                debug: false
+            }
+        },
         scene: {
             preload: preload,
             create: create,
@@ -44,6 +52,7 @@
         );
     }
 
+    var platforms;
  
 
     // create our game with game world, players, phyiscs, and gameplay
@@ -54,8 +63,20 @@
         // set origin draws the image from an x,y coordinate
         // z-index of images corresponds to the order in which they are loaded
         this.add.image(400, 300, 'sky');
-        this.add.image(400, 300, 'star');
 
+        // add usage of Arcade Physics system on platforms
+        // platforms are now Static Physics Group, a type of component, simply have position and size, don't move
+        platforms = this.physics.add.staticGroup();
+        
+        // create the 'ground' platform, full width of the game so player doesn't fall off
+        // setScale(2) doubles the platform width to cover the canvas
+        // refreshBody tells physics to update this static element
+        platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+
+        // position 3 more platforms to create our game world
+        platforms.create(600, 400, 'ground');
+        platforms.create(50, 250, 'ground');
+        platforms.create(750, 220, 'ground');
     }
 
     function update ()
