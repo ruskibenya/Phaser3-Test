@@ -79,6 +79,9 @@
         platforms.create(50, 250, 'ground');
         platforms.create(750, 220, 'ground');
 
+
+        
+
         // GAME PLAYER
 
         // PLAYER PHYSICS
@@ -121,6 +124,10 @@
             frameRate: 10,
             repeat: -1
         });
+
+        // PLAYER COLLIDERS
+        // tests collisions and seperates player sprite from platforms group
+        this.physics.add.collider(player, platforms);
     }
 
     function update ()
