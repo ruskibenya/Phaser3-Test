@@ -127,10 +127,25 @@
         // refreshBody tells physics to update this static element
         platforms.create(400, 568, 'ground').setScale(2).refreshBody();
 
+
+        // TODO: Extra feature
+        // New feature is to make each game have a different "level"
+        // This means that the platforms should be different each time, the number of stars should change, and same with the bombs
+        // I will start by implementing the changing platforms
+        // This will work by generating different platforms
+        
+        [1,2, 3].forEach(function(i) {
+            const x = Math.floor(Math.random() * 700);
+            const y = Math.floor(Math.random() * 400); 
+            platforms.create(x, y, 'ground');
+
+        });
+
+
         // position 3 more platforms to create our game world
-        platforms.create(600, 400, 'ground');
-        platforms.create(50, 250, 'ground');
-        platforms.create(750, 220, 'ground');
+        // platforms.create(600, 400, 'ground');
+        // platforms.create(50, 250, 'ground');
+        // platforms.create(750, 220, 'ground');
 
         // STARS GROUP
         // star image
