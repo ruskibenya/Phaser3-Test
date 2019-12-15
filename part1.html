@@ -56,10 +56,16 @@
     var platforms;
     var player;
 
+    // define our score and text to show the score
+    var score = 0;
+    var scoreText;
+
     // when a player collects a star, that star is disabled
     function collectStar (player, star)
     {
         star.disableBody(true, true);
+        score += 10;
+        scoreText.setText('Score: ' + score);
     }
  
 
