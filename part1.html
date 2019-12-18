@@ -132,36 +132,55 @@
 
         // TODO: Extra feature
         // New feature is to make each game have a different "level"
-        // This means that the platforms should be different each time, the number of stars should change, and same with the bombs
-        // I will start by implementing the changing platforms
-        // This will work by generating different platforms
-        // then this function will be called also when a user collects all the stars so it feels like a new level each time
+        // This means that the platforms should be different each time
 
-// width: 800
-// height: 600
-
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
-
-        // position 3 more platforms to create our game world
-        // lowest platform: must be at most 233 from the top of the ground (536-233+16=319) and at least (536-451=85) from the ground to make room for dude
-        testLow = getRandomInt(319, 451);
-        //highest platform:  highest possible (319-233=86), lowest possible(451-233=218)
-        testHigh = getRandomInt(86, 218);
-        testMid = getRandomInt(203, 334);
-
-
-        platforms.create(600, testLow, 'ground');
-        platforms.create(750, testHigh, 'ground');
-
-        if (testLow - testMid < 100){
-                testMid = testMid - 75;
+        // function to get random integer
+        function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
         }
-        platforms.create(240, testMid, 'ground');
+
+        // function to generate three random heights that allow user to actual move between platforms
+        function getThreeRandomHeights(){
+            const heights = {};
+            testLow = getRandomInt(319, 451);
+            testHigh = getRandomInt(86, 218);
+            testMid = getRandomInt(203, 334);     
+            if (testLow - testMid < 100){
+                    testMid = testMid - 75;
+            }
+            heights["low"] = testLow;
+            heights["med"] = testMid;
+            heights["high"] = testHigh;
+            return heights;
+        }
+
+        // generate a random number 0 or 1, "50/50 odds" whether middle platform will be on left or right
+        leftOrRight = getRandomInt(0, 2);
+        // actually use getThreeRandomHeights method to get 3 random heights
+        heights = getThreeRandomHeights();
+        // generate 3 random platforms, whether on left or right
+        if (leftOrRight === 0){
+            platforms.create(600, heights["low"], 'ground');
+            platforms.create(750, heights["high"], 'ground');
+            platforms.create(240, heights["med"], 'ground');
+        }
+        else{
+            console.log("YOYO");
+            platforms.create(200, heights["low"], 'ground');
+            platforms.create(50, heights["high"], 'ground');
+            platforms.create(560, heights["med"], 'ground');
+        }
+
+    
+
+        // // position 3 more platforms to create our game world
+        // // lowest platform: must be at most 233 from the top of the ground (536-233+16=319) and at least (536-451=85) from the ground to make room for dude
+        // testLow = getRandomInt(319, 451);
+        // //highest platform:  highest possible (319-233=86), lowest possible(451-233=218)
+        // testHigh = getRandomInt(86, 218);
+        // testMid = getRandomInt(203, 334);
 
 
         // STARS GROUP
