@@ -102,7 +102,9 @@
 
         // end game
         gameOver = true;
-        alert(`Game Over, score: ${score}`);
+        if(confirm(`Your Score: ${score}`))
+        { window.location.reload(); }
+
     }
  
 
@@ -133,19 +135,34 @@
         // This means that the platforms should be different each time, the number of stars should change, and same with the bombs
         // I will start by implementing the changing platforms
         // This will work by generating different platforms
-        
-        [1,2, 3].forEach(function(i) {
-            const x = Math.floor(Math.random() * 700);
-            const y = Math.floor(Math.random() * 400); 
-            platforms.create(x, y, 'ground');
+        // then this function will be called also when a user collects all the stars so it feels like a new level each time
 
-        });
+// width: 800
+// height: 600
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
 
 
         // position 3 more platforms to create our game world
-        // platforms.create(600, 400, 'ground');
-        // platforms.create(50, 250, 'ground');
-        // platforms.create(750, 220, 'ground');
+        // lowest platform: must be at most 233 from the top of the ground (536-233+16=319) and at least (536-451=85) from the ground to make room for dude
+        testLow = getRandomInt(319, 451);
+        //highest platform:  highest possible (319-233=86), lowest possible(451-233=218)
+        testHigh = getRandomInt(86, 218);
+        testMid = getRandomInt(203, 334);
+
+
+        platforms.create(600, testLow, 'ground');
+        platforms.create(750, testHigh, 'ground');
+
+        if (testLow - testMid < 100){
+                testMid = testMid - 75;
+        }
+        platforms.create(240, testMid, 'ground');
+
 
         // STARS GROUP
         // star image
