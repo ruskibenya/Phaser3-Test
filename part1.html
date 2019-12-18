@@ -46,6 +46,8 @@
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
+        this.load.image('gun', 'assets/gun.png');
+        this.load.image('bullet', 'assets/bullet.png');
         this.load.spritesheet('dude', 
             'assets/dude.png',
             { frameWidth: 32, frameHeight: 48 }
@@ -63,7 +65,11 @@
     var lives = 3;
     var livesText;
 
-    var jump = 0;   
+    var jump = 0;
+
+    var bullets = 0;
+    var gun;
+    var lastFired = 0;
 
     // fucntionality when a player collects a star
     function collectStar (player, star)
@@ -303,11 +309,66 @@
         // bombs will call hitbomb function when collide with player
         this.physics.add.collider(player, bombs, hitBomb, null, this);
     
+        
+        var Bullet = new Phaser.Class({
 
+        Extends: Phaser.GameObjects.Image,
+
+        initialize:
+
+        function Bullet (scene)
+        {
+            Phaser.GameObjects.Image.call(this, scene, 0, 0, 'bullet');
+
+            this.speed = Phaser.Math.GetSpeed(400, 1);
+        },
+
+        fire(x, y)
+        {
+            this.setPosition(x, y - 50);
+            this.setActive(true);
+            this.setVisible(true);
+        },
+        fire_left(x, y)
+        {
+            this.setPosition(x-50, y);
+            this.setActive(true);
+            this.setVisible(true);
+        },
+        fire_right(x, y)
+        {
+            this.setPosition(x+50, y);
+            this.setActive(true);
+            this.setVisible(true);
+        },
+
+
+
+        update(time, delta) {
+            this.y -= this.speed * delta;
+            this.x -= this.speed * delta;
+            
+            if (this.y < -50) {
+            this.setActive(false);
+            this.setVisible(false);
+            }
+        }
+
+        });
+        
+        bullets = this.add.group({
+            classType: Bullet,
+            maxSize: 10,
+            runChildUpdate: true
+        });
+
+        ship = this.add.sprite(400, 500, 'ship').setDepth(1);
+
+        gun_cursors = this.input.keyboard.addKeys('W,S,A,D');
         
     }
 
-    function update ()
+    function update (time, delta)
     {
         // if user presses left arrow
         if (cursors.left.isDown)
@@ -352,6 +413,40 @@
 
         // when a playeroverlaps a star, the collectStar method is called
         this.physics.add.overlap(player, stars, collectStar, null, this);
+
+        if (gun_cursors.W.isDown && time > lastFired)
+        {
+            var bullet = bullets.get();
+
+            if (bullet)
+            {
+                bullet.fire(ship.x, ship.y);
+
+                lastFired = time + 50;
+            }
+        }
+        else if (gun_cursors.A.isDown && time > lastFired)
+        {
+            var bullet = bullets.get();
+
+            if (bullet)
+            {
+                bullet.fire_left(ship.x, ship.y);
+
+                lastFired = time + 50;
+            }
+        }
+        else if (gun_cursors.D.isDown && time > lastFired)
+        {
+            var bullet = bullets.get();
+
+            if (bullet)
+            {
+                bullet.fire_right(ship.x, ship.y);
+
+                lastFired = time + 50;
+            }
+        }
 
     }
 
