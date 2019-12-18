@@ -21,6 +21,14 @@
         // size of canvas element that game will display in
         width: 800,
         height: 600,
+        // configuration to allow use of Arcade Physics system
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: {y: 300},
+                debug: false
+            }
+        },
         scene: {
             preload: preload,
             create: create,
@@ -44,6 +52,98 @@
         );
     }
 
+    // define our game variables and functions
+    var platforms;
+    var player;
+
+    // define our score and text to show the score
+    var score = 0;
+    var scoreText;
+
+    var lives = 3;
+    var livesText;
+
+    var jump = 0;   
+
+    // fucntionality when a player collects a star
+    function collectStar (player, star)
+    {   
+        // that star is disabled
+        star.disableBody(true, true);
+        // player 10 points added to player score 
+        score += 10;
+        // the score display is updated
+        scoreText.setText('score:' + score);
+        
+        // when player has collected all the stars
+        if (stars.countActive(true) === 0)
+        {
+            stars.children.iterate(function (child) {
+
+                child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            // select a random x coordinate to drop the bomb
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            // drop the bomb and set the physics of the bomb (bounce, bounds, velocity)
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+
+        }
+    }
+
+    function restartLevel(){
+        stars.children.iterate(function (child) {
+
+        child.enableBody(true, child.x, 0, true, true);
+
+        });
+
+        numberOfBombs = bombs.children.size;
+        bombs.clear(true);
+
+        for(var i=0; i < numberOfBombs; i++){
+            // select a random x coordinate to drop the bomb
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+        
+            // drop the bomb and set the physics of the bomb (bounce, bounds, velocity)        
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        }
+ 
+    }
+
+    // functionality when a player hits a bomb
+    function hitBomb (player, bomb)
+    {   
+        lives -=1;
+        // the lives display is updated
+        livesText.setText('lives:' + lives);
+
+        if(confirm(`You lost a life!`))
+            { restartLevel(); }
+
+        if(lives === 0){
+
+            // stop the game
+            this.physics.pause();
+            // turn player and set him xred
+            player.setTint(0xff0000);
+            player.anims.play('turn');
+    
+            // end game
+            gameOver = true;
+            if(confirm(`Your Score: ${score}`))
+            { window.location.reload(); }
+        }
+
+    }
  
 
     // create our game with game world, players, phyiscs, and gameplay
@@ -54,12 +154,205 @@
         // set origin draws the image from an x,y coordinate
         // z-index of images corresponds to the order in which they are loaded
         this.add.image(400, 300, 'sky');
-        this.add.image(400, 300, 'star');
 
+        // create a score display for the player
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        livesText = this.add.text(220, 16, 'lives: 3', { fontSize: '32px', fill: '#000' });
+
+        // add usage of Arcade Physics system on platforms
+        // platforms are now Static Physics Group, a type of component, simply have position and size, don't move
+        platforms = this.physics.add.staticGroup();
+        
+        // create the 'ground' platform, full width of the game so player doesn't fall off
+        // setScale(2) doubles the platform width to cover the canvas
+        // refreshBody tells physics to update this static element
+        platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+
+
+        // TODO: Extra feature
+        // New feature is to make each game have a different "level"
+        // This means that the platforms should be different each time
+
+        // function to get random integer
+        function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+        }
+
+        // function to generate three random heights that allow user to actual move between platforms
+        function getThreeRandomHeights(){
+            const heights = {};
+            testLow = getRandomInt(319, 451);
+            testHigh = getRandomInt(86, 218);
+            testMid = getRandomInt(203, 334);     
+            if (testLow - testMid < 100){
+                    testMid = testMid - 75;
+            }
+            heights["low"] = testLow;
+            heights["med"] = testMid;
+            heights["high"] = testHigh;
+            return heights;
+        }
+
+        // generate a random number 0 or 1, "50/50 odds" whether middle platform will be on left or right
+        leftOrRight = getRandomInt(0, 2);
+        // actually use getThreeRandomHeights method to get 3 random heights
+        heights = getThreeRandomHeights();
+        // generate 3 random platforms, whether on left or right
+        if (leftOrRight === 0){
+            platforms.create(600, heights["low"], 'ground');
+            platforms.create(750, heights["high"], 'ground');
+            platforms.create(240, heights["med"], 'ground');
+        }
+        else{
+            platforms.create(200, heights["low"], 'ground');
+            platforms.create(50, heights["high"], 'ground');
+            platforms.create(560, heights["med"], 'ground');
+        }
+
+    
+
+        // // position 3 more platforms to create our game world
+        // // lowest platform: must be at most 233 from the top of the ground (536-233+16=319) and at least (536-451=85) from the ground to make room for dude
+        // testLow = getRandomInt(319, 451);
+        // //highest platform:  highest possible (319-233=86), lowest possible(451-233=218)
+        // testHigh = getRandomInt(86, 218);
+        // testMid = getRandomInt(203, 334);
+
+
+        // STARS GROUP
+        // star image
+        // repeat to show 11 stars
+        // space the stars starting at x:12, y:0, and space them apart by 70px in the x direction
+        stars = this.physics.add.group({
+            key: 'star',
+            repeat: 11,
+            setXY: { x: 12, y: 0, stepX: 70 }
+        });
+
+        stars.children.iterate(function (child) {
+
+            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+
+        });
+
+        // STARS COLLIDER
+        // stars will sit on the platforms
+        this.physics.add.collider(stars, platforms);
+
+
+
+        // GAME PLAYER
+
+        // PLAYER PHYSICS
+        // create the player as a physical sprite, dynamic physics body 
+        player = this.physics.add.sprite(100, 450, 'dude');
+
+        // set amount of bounce when sprite lands
+        player.setBounce(0.2);
+        // set the bounds of the sprite to reach the ends of the canvas
+        player.setCollideWorldBounds(true);
+        
+        // set player gravity, speed of fall/difficulty to jump
+        player.body.setGravityY(300)
+
+        // PLAYER MOVEMENTS
+        // define the left action of the dude
+        // left action is the animation of frames 0..3, moving at 10 frames/sec
+        // repeat -1: animation will loop
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        // define the 'turn' action of the dude
+        // frame 4 of the sprite will show when the dude's action changes left->rt or rt->left
+        this.anims.create({
+            key: 'turn',
+            frames: [ { key: 'dude', frame: 4 } ],
+            frameRate: 20
+        });
+
+        // define the left action of the dude
+        // left action is the animation of frames 5..8, moving at 10 frames/sec
+        // repeat -1: animation will loop
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        // PLAYER COLLIDERS
+        // tests collisions and seperates player sprite from platforms group
+        this.physics.add.collider(player, platforms);
+
+        // retrieve user input/player movements using Phaser keyboard manager
+        // logic is defined in update function
+        cursors = this.input.keyboard.createCursorKeys();
+
+
+        // BOMBS GROUP
+        bombs = this.physics.add.group();
+        // BOMBS COLLIDERS
+        // Bombs sit on platforms
+        this.physics.add.collider(bombs, platforms);
+        // bombs will call hitbomb function when collide with player
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
+    
+
+        
     }
 
     function update ()
     {
+        // if user presses left arrow
+        if (cursors.left.isDown)
+        {
+            // define player velocity in left-right direction to neg 160
+            player.setVelocityX(-160);
+            // call the left action on player
+            player.anims.play('left', true);
+        }
+        // if user presses right arrow
+        else if (cursors.right.isDown)
+        {
+            // define player velocity in left-right direction to positive 160
+            player.setVelocityX(160);
+            // call the right action on player
+            player.anims.play('right', true);
+        }
+        // if user doesn't press either left or right arrow, call player turn action and don't move player
+        else
+        {
+            player.setVelocityX(0);
+
+            player.anims.play('turn');
+        }
+
+        // reset player jumps when he hits the ground
+        // allow player to do a double jump (2 total jumps)
+        if (player.body.touching.down) {
+            jump = 2;
+        }
+        
+        // when user presses up arrow, make the player jump with vertical velocity of 530
+        // check to see if up arrow has just been pressed, not repeated while key is down 
+        // check that user has jumps left
+        if (Phaser.Input.Keyboard.JustDown(cursors.up) && jump > 0) {
+
+            // each time user jumps, they lose one of their jump abilities
+            jump--;
+            player.body.velocity.y += -530;
+        }
+        
+
+        // when a playeroverlaps a star, the collectStar method is called
+        this.physics.add.overlap(player, stars, collectStar, null, this);
+
     }
 
 </script>
