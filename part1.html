@@ -60,6 +60,9 @@
     var score = 0;
     var scoreText;
 
+    var lives = 3;
+    var livesText;
+
     // fucntionality when a player collects a star
     function collectStar (player, star)
     {   
@@ -68,7 +71,8 @@
         // player 10 points added to player score 
         score += 10;
         // the score display is updated
-        scoreText.setText('Score: ' + score);
+        scoreText.setText('Score:' + score);
+        
 
         // when player has collected all the stars
         if (stars.countActive(true) === 0)
@@ -94,16 +98,33 @@
     // functionality when a player hits a bomb
     function hitBomb (player, bomb)
     {   
-        // stop the game
-        this.physics.pause();
-        // turn player and set him red
-        player.setTint(0xff0000);
-        player.anims.play('turn');
+        lives -=1;
+        // the lives display is updated
+        livesText.setText('Lives:' + lives);
+        console.log(lives);
+        if(lives === 0){
 
-        // end game
-        gameOver = true;
-        if(confirm(`Your Score: ${score}`))
-        { window.location.reload(); }
+            // stop the game
+            this.physics.pause();
+            // turn player and set him xred
+            player.setTint(0xff0000);
+            player.anims.play('turn');
+    
+            // end game
+            gameOver = true;
+            if(confirm(`Your Score: ${score}`))
+            { window.location.reload(); }
+        }
+
+    }
+
+    function loseLive (player, lives, bomb)
+    {
+        console.log("YO I'm HERE BRO")
+        // turn player and set him orange
+        player.setTint(0xff9900);
+        player.anims.play('turn');
+        return lives -= 1
 
     }
  
@@ -119,6 +140,7 @@
 
         // create a score display for the player
         scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        livesText = this.add.text(220, 16, 'lives: 3', { fontSize: '32px', fill: '#000' });
 
         // add usage of Arcade Physics system on platforms
         // platforms are now Static Physics Group, a type of component, simply have position and size, don't move
@@ -167,7 +189,6 @@
             platforms.create(240, heights["med"], 'ground');
         }
         else{
-            console.log("YOYO");
             platforms.create(200, heights["low"], 'ground');
             platforms.create(50, heights["high"], 'ground');
             platforms.create(560, heights["med"], 'ground');
@@ -263,6 +284,7 @@
         // Bombs sit on platforms
         this.physics.add.collider(bombs, platforms);
         // bombs will call hitbomb function when collide with player
+        this.physics.add.collider(player, lives, bombs, loseLive, null, this);
         this.physics.add.collider(player, bombs, hitBomb, null, this);
     
 
