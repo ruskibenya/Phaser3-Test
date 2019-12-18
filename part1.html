@@ -63,6 +63,8 @@
     var lives = 3;
     var livesText;
 
+    var jump = 0;   
+
     // fucntionality when a player collects a star
     function collectStar (player, star)
     {   
@@ -140,16 +142,6 @@
             if(confirm(`Your Score: ${score}`))
             { window.location.reload(); }
         }
-
-    }
-
-    function loseLive (player, lives, bomb)
-    {
-        console.log("YO I'm HERE BRO")
-        // turn player and set him orange
-        player.setTint(0xff9900);
-        player.anims.play('turn');
-        return lives -= 1
 
     }
  
@@ -340,11 +332,23 @@
 
             player.anims.play('turn');
         }
-        // if user presses up arrow, set the player vertical velocity to 330, makes the player jump
-        if (cursors.up.isDown && player.body.touching.down)
-        {
-            player.setVelocityY(-530);
+
+        // reset player jumps when he hits the ground
+        // allow player to do a double jump (2 total jumps)
+        if (player.body.touching.down) {
+            jump = 2;
         }
+        
+        // when user presses up arrow, make the player jump with vertical velocity of 530
+        // check to see if up arrow has just been pressed, not repeated while key is down 
+        // check that user has jumps left
+        if (Phaser.Input.Keyboard.JustDown(cursors.up) && jump > 0) {
+
+            // each time user jumps, they lose one of their jump abilities
+            jump--;
+            player.body.velocity.y += -530;
+        }
+        
 
         // when a playeroverlaps a star, the collectStar method is called
         this.physics.add.overlap(player, stars, collectStar, null, this);
