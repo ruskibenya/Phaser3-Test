@@ -71,9 +71,8 @@
         // player 10 points added to player score 
         score += 10;
         // the score display is updated
-        scoreText.setText('Score:' + score);
+        scoreText.setText('score:' + score);
         
-
         // when player has collected all the stars
         if (stars.countActive(true) === 0)
         {
@@ -95,13 +94,39 @@
         }
     }
 
+    function restartLevel(){
+        stars.children.iterate(function (child) {
+
+        child.enableBody(true, child.x, 0, true, true);
+
+        });
+
+        numberOfBombs = bombs.children.size;
+        bombs.clear(true);
+
+        for(var i=0; i < numberOfBombs; i++){
+            // select a random x coordinate to drop the bomb
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+        
+            // drop the bomb and set the physics of the bomb (bounce, bounds, velocity)        
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        }
+ 
+    }
+
     // functionality when a player hits a bomb
     function hitBomb (player, bomb)
     {   
         lives -=1;
         // the lives display is updated
-        livesText.setText('Lives:' + lives);
-        console.log(lives);
+        livesText.setText('lives:' + lives);
+
+        if(confirm(`You lost a life!`))
+            { restartLevel(); }
+
         if(lives === 0){
 
             // stop the game
@@ -284,7 +309,6 @@
         // Bombs sit on platforms
         this.physics.add.collider(bombs, platforms);
         // bombs will call hitbomb function when collide with player
-        this.physics.add.collider(player, lives, bombs, loseLive, null, this);
         this.physics.add.collider(player, bombs, hitBomb, null, this);
     
 
